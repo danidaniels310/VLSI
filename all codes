@@ -1,0 +1,1318 @@
+ALU
+
+library IEEE;
+
+
+
+use IEEE.STD_LOGIC_1164. ALL;
+
+
+
+use IEEE.STD_LOGIC_unsigned.all;
+
+
+
+entity alu is
+
+
+
+Port (a: in STD_LOGIC_VECTOR (3 downto 0);
+
+
+
+b : in STD_LOGIC_VECTOR (3 downto 0);
+
+y: out STD_LOGIC_VECTOR (3 downto 0);
+
+
+
+sel: in STD_LOGIC_VECTOR (3 downto 0);
+
+cin: in STD_LOGIC);
+
+
+
+end alu;
+
+
+
+architecture behavioral of alu is 
+
+SIGNAL arith, logic: STD_LOGIC_VECTOR (3 DOWNTO 0);
+
+
+
+begin
+
+
+
+---ARITHMETIC UNIT
+
+with sel(2 DOWNTO 0) select
+
+arith<= a when "000",
+
+a+1 when "001",
+
+a-1 when "010",
+
+b when "011",
+
+b+1 when "100",
+
+b-1 when "101",
+
+a+b when "110",
+
+a+b+cin when OTHERS;
+
+
+
+with sel(2 DOWNTO 0) SELECT
+
+logic<= NOT a when "000",
+
+NOT b when "001",
+
+a AND b when "010",
+
+a OR b when "011",
+
+a NAND b when "100",
+
+a NOR b when "101",
+
+a XOR b when "110",
+
+NOT (a XOR b) when OTHERS;
+
+
+
+-------
+
+with sel(3) SELECT
+
+
+
+y<=arith when '0',
+
+logic when OTHERS;
+
+
+
+end behavioral;
+
+
+Test Bench:
+
+
+library IEEE;
+
+use IEEE.STD_LOGIC_1164. ALL;
+ use IEEE.STD_LOGIC_unsigned.all;
+
+--Uncomment the following library declaration if using -arithmetic functions with Signed or Unsigned values --use IEEE NUMERIC_STD. ALL:
+
+--Uncomment the following library declaration if instantiating - any Xilinx leaf cells in this code.
+
+--Library UNISIM:
+
+--use UNISIN. VComponents.all
+
+entity alu_tb is Generic (n: integer:=4);
+
+end alu_tb;
+
+architecture Behavioral of alu_tb is
+
+component alu is
+
+ Port ( a : in STD_LOGIC_vector(3 downto 0);
+           b : in STD_LOGIC_vector(3 downto 0);
+           Cin : in STD_LOGIC;
+           sel : in STD_LOGIC_vector(3 downto 0);
+           y : out STD_LOGIC_vector(3 downto 0));
+
+end component;
+
+signal a,b,y: std_logic_vector(3 downto 0);
+ signal sel:std_logic_vector(3 downto 0):= "0000";
+ signal cin: std_logic;
+
+begin
+
+Ul: alu port map (a,b,cin,sel,y);
+
+process
+
+begin
+a<="0001";
+
+b<="1111";
+
+cin<='0';
+
+wait for 200 ns;
+
+end process;
+
+process
+
+begin
+
+wait for 200 ns;
+
+sel<= sel+'1';
+
+wait for 200 ns;
+
+end process;
+
+end Behavioral;
+
+
+USR
+
+USR
+
+Universal shift Register
+
+--PIPO Main code
+
+ 
+
+library IEEE;
+
+use IEEE.STD_LOGIC_1164.ALL;
+
+ 
+
+-- Uncomment the following library declaration if using
+
+-- arithmetic functions with Signed or Unsigned values
+
+--use IEEE.NUMERIC_STD.ALL;
+
+ 
+
+-- Uncomment the following library declaration if instantiating
+
+-- any Xilinx primitives in this code.
+
+--library UNISIM;
+
+--use UNISIM.VComponents.all;
+
+ 
+
+entity sh4 is
+
+    Port ( clk : in  STD_LOGIC;
+
+   load1 :in STD_LOGIC;
+
+           in4 : in  STD_LOGIC_VECTOR (3 downto 0);
+
+           out4 : inout  STD_LOGIC_VECTOR (3 downto 0));
+
+end sh4;
+
+ 
+
+architecture Behavioral of sh4 is
+
+signal s4:STD_LOGIC_VECTOR(3 DOWNTO 0);
+
+begin
+
+process(clk,in4,load1,out4)
+
+begin
+
+if(load1='1') THEN
+
+s4 <= in4;
+
+else
+
+s4 <= out4;
+
+end if;
+
+if(clk'EVENT and clk='1') THEN
+
+out4 <= s4;
+
+end if;
+
+end process;
+
+end Behavioral;
+
+ 
+
+ 
+
+--PIPO TestBench
+
+library IEEE;
+
+use IEEE.STD_LOGIC_1164.ALL;
+
+
+entity pipo_tb is
+
+end pipo_tb;
+
+ 
+
+architecture beh of pipo_tb is
+
+ 
+
+component sh4 is
+
+    Port ( clk : in  STD_LOGIC;
+
+   load1 :in STD_LOGIC;
+
+           in4 : in  STD_LOGIC_VECTOR (3 downto 0);
+
+           out4 : inout  STD_LOGIC_VECTOR (3 downto 0));
+
+end component;
+
+ 
+
+signal clk, load1: std_logic;
+
+signal in4,out4 : std_logic_vector( 3 downto 0);
+
+ 
+
+begin
+
+ u1: sh4 port map ( clk,load1,in4,out4);
+
+ 
+
+process
+
+begin
+
+clk<= '0';
+
+wait for 10 ns;
+
+clk<= '1';
+
+wait for 10 ns ;
+
+end process;
+
+ 
+
+process
+
+begin
+
+load1<= '1';
+
+in4<= "1010";
+
+wait for 300 ns;
+
+load1<= '0';
+
+in4<= "0011";
+
+wait for 100 ns;
+
+load1<= '1';
+
+in4<= "1111";
+
+wait for 150 ns ;
+
+end process;
+
+ 
+
+end beh;
+
+
+
+ 
+
+--PISO Main code
+
+library IEEE;
+
+use IEEE.STD_LOGIC_1164.ALL;
+
+ 
+
+entity sh3 is  --PISO
+
+    Port ( clk : in  STD_LOGIC;
+
+           load : in  STD_LOGIC;
+
+           in3 : in  STD_LOGIC_VECTOR (3 downto 0);
+
+           out3 : out  STD_LOGIC);
+
+end sh3;
+
+ 
+
+architecture Behavioral of sh3 is
+
+signal s3 : STD_LOGIC;
+
+signal temp : STD_LOGIC_VECTOR(3 DOWNTO 0);
+
+
+begin
+
+process(clk,in3,load,s3)
+
+         
+
+begin
+
+if(load='1') THEN
+
+temp(3 DOWNTO 0) <= in3(3 DOWNTO 0);    
+
+elsif(clk'EVENT and clk='1') THEN
+
+temp(3 DOWNTO 1) <= temp(2 DOWNTO 0);
+
+s3 <= temp(3);
+
+end if;
+
+end process;
+
+out3 <= s3;
+
+end Behavioral;
+
+ 
+
+ 
+
+--PISO TB
+
+library IEEE;
+
+use IEEE.STD_LOGIC_1164.ALL;
+
+
+entity piso_tb is
+
+end piso_tb;
+
+ 
+
+architecture beh of piso_tb is
+
+ 
+
+component sh3
+
+   Port ( clk : in  STD_LOGIC;
+
+           load : in  STD_LOGIC;
+
+           in3 : in  STD_LOGIC_VECTOR (3 downto 0);
+
+           out3 : out  STD_LOGIC);
+
+end component;
+
+ 
+
+signal clk, load, out3: std_logic;
+
+signal in3 : STD_LOGIC_VECTOR (3 downto 0);
+
+ 
+
+begin
+
+ u1: sh3 port map ( clk,load,in3,out3);
+
+ 
+
+process
+
+begin
+
+clk<= '0';
+
+wait for 10 ns;
+
+clk<= '1';
+
+wait for 10 ns ;
+
+end process;
+
+  
+
+Process
+
+begin
+
+load<= '1' ;
+
+in3<= "1100";
+
+wait for 20 ns;
+
+load<= '0';
+
+wait for 100 ns ;
+
+end process;
+
+ 
+
+end beh;
+
+ 
+
+ 
+
+-- SIPO MainCode
+
+library IEEE;
+
+use IEEE.STD_LOGIC_1164.ALL;
+
+ 
+
+entity sh2 is
+
+    Port ( clk : in  STD_LOGIC;
+
+           in2 : in  STD_LOGIC;
+
+           out2 : inout  STD_LOGIC_VECTOR (3 downto 0));
+
+end sh2;
+
+ 
+
+architecture Behavioral of sh2 is
+
+begin
+
+process(clk,in2,out2)
+
+begin
+
+if(clk'EVENT and clk='1') THEN
+
+out2(3 DOWNTO 1) <= out2(2 DOWNTO 0);
+
+out2(0) <= in2;
+
+end if;
+
+end process;
+
+end Behavioral;
+
+ 
+
+
+
+--SIPO TestBench
+
+library IEEE;
+
+use IEEE.STD_LOGIC_1164.ALL;
+
+
+entity sipo_tb is
+
+end sipo_tb;
+
+ 
+
+architecture beh of sipo_tb is
+
+ 
+
+component sh2 is
+
+    Port ( clk : in  STD_LOGIC;
+
+           in2 : in  STD_LOGIC;
+
+           out2 : inout  STD_LOGIC_VECTOR (3 downto 0));
+
+end component;
+
+signal clk, in2: std_logic;
+
+signal out2 : std_logic_vector( 3 downto 0);
+
+ 
+
+begin
+
+ u1: sh2 port map ( clk,in2,out2);
+
+ 
+
+process
+
+begin
+
+clk<= '0';
+
+wait for 10 ns;
+
+clk<= '1';
+
+wait for 10 ns ;
+
+end process;
+
+ 
+
+ 
+
+in2<= '1', '0' after 80 ns;
+
+end beh;
+
+ 
+
+
+
+ --SISO Maincode
+
+library IEEE;
+
+use IEEE.STD_LOGIC_1164.ALL;
+
+
+entity sh1 is
+
+    Port ( clk : in  STD_LOGIC;
+
+           in1 : in  STD_LOGIC;
+
+           out1 : out  STD_LOGIC);
+
+end sh1;
+
+architecture Behavioral of sh1 is
+
+signal s1 : STD_LOGIC_VECTOR(3 DOWNTO 0);
+
+begin
+
+process(clk,in1,s1)
+
+begin
+
+if(clk'EVENT and clk='1') THEN
+
+s1(3 DOWNTO 1) <= s1(2 DOWNTO 0);
+
+s1(0) <= in1;
+
+end if;
+
+end process;
+
+out1 <= s1(3);
+
+end Behavioral;
+
+ 
+
+  
+
+-- SISO Testbench
+
+library IEEE;
+
+use IEEE.STD_LOGIC_1164.ALL;
+
+
+entity siso_tb is
+
+end siso_tb;
+
+ 
+
+architecture beh of siso_tb is
+
+ 
+
+component sh1
+
+    Port ( clk : in  STD_LOGIC;
+
+           in1 : in  STD_LOGIC;
+
+           out1 : out  STD_LOGIC);
+
+end component;
+
+ 
+
+signal clk, in1,out1: std_logic;
+
+ 
+
+begin
+
+ u1: sh1 port map ( clk,in1,out1);
+
+ 
+
+process
+
+begin
+
+clk<= '0';
+
+wait for 10 ns;
+
+clk<= '1';
+
+wait for 20 ns ;
+
+end process;
+
+ 
+
+ 
+
+in1<= '1', '0' after 80 ns;
+
+end beh;
+
+ 
+
+
+
+-- Universal MAIN code
+
+library IEEE;
+
+use IEEE.STD_LOGIC_1164.ALL;
+
+use IEEE.STD_LOGIC_ARITH.ALL;
+
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
+
+-- Uncomment the following library declaration if using
+
+-- arithmetic functions with Signed or Unsigned values
+
+use IEEE.NUMERIC_STD.ALL;
+
+ 
+
+-- Uncomment the following library declaration if instantiating
+
+-- any Xilinx primitives in this code.
+
+--library UNISIM;
+
+--use UNISIM.VComponents.all;
+
+ 
+
+entity sh_uni is
+
+    Port ( clk : in  STD_LOGIC;
+
+           load : in  STD_LOGIC;
+
+     sel : in STD_LOGIC_VECTOR(1 DOWNTO 0);
+
+           si : in  STD_LOGIC;
+
+           pi : in  STD_LOGIC_VECTOR (3 downto 0);
+
+           so : out  STD_LOGIC;
+
+           po : inout  STD_LOGIC_VECTOR (3 downto 0));
+
+end sh_uni;
+
+ 
+
+architecture Behavioral of sh_uni is
+
+
+component sh1
+
+Port ( clk : in  STD_LOGIC;
+
+           in1 : in  STD_LOGIC;
+
+           out1 : out  STD_LOGIC);
+
+end component;
+
+
+component sh2
+
+   Port ( clk : in  STD_LOGIC;
+
+           in2 : in  STD_LOGIC;
+
+           out2 : inout  STD_LOGIC_VECTOR (3 downto 0));
+
+end component;
+
+
+component sh3
+
+   Port ( clk : in  STD_LOGIC;
+
+           load : in  STD_LOGIC;
+
+           in3 : in  STD_LOGIC_VECTOR (3 downto 0);
+
+           out3 : out  STD_LOGIC);
+
+end component;
+
+
+component sh4
+
+   Port ( clk : in  STD_LOGIC;
+
+load1 : in STD_LOGIC;
+
+           in4 : in  STD_LOGIC_VECTOR (3 downto 0);
+
+           out4 : inout  STD_LOGIC_VECTOR (3 downto 0));
+
+end component;
+
+signal SiSo, PiSo: STD_LOGIC;
+
+signal SiPo, PiPo: STD_LOGIC_VECTOR(3 downto 0);
+
+ 
+
+begin
+
+U1: sh1 port map(clk,si,SiSo);
+
+U2: sh2 port map(clk,si,SiPo);
+
+U3: sh3 port map(clk,load,pi,PiSo);
+
+U4: sh4 port map(clk,load,pi,PiPo);
+
+ 
+
+with sel select
+
+so <= SiSo when "00",
+
+PiSo when "10",
+
+'Z' when others;
+
+with sel select
+
+po <= SiPo when "01",
+
+PiPo when "11",
+
+"ZZZZ" when others;
+
+
+
+end Behavioral;
+
+ 
+
+ 
+
+--Test bench USR
+
+ LIBRARY ieee;
+
+USE ieee.std_logic_1164.ALL;
+
+ 
+
+-- Uncomment the following library declaration if using
+
+-- arithmetic functions with Signed or Unsigned values
+
+--USE ieee.numeric_std.ALL;
+
+ 
+
+ENTITY usr_test IS
+
+END usr_test;
+
+ 
+
+ARCHITECTURE behavior of usr_test is
+
+ 
+
+    -- Component Declaration for the Unit Under Test (UUT)
+
+ 
+
+    COMPONENT sh_uni
+
+    PORT(
+
+         clk : IN  std_logic;
+
+         load : IN  std_logic;
+
+         sel : IN  std_logic_vector(1 downto 0);
+
+         si : IN  std_logic;
+
+         pi : IN  std_logic_vector(3 downto 0);
+
+         so : OUT  std_logic;
+
+         po : INOUT  std_logic_vector(3 downto 0)
+
+        );
+
+    END COMPONENT;
+
+    
+
+ 
+
+   --Inputs
+
+   signal clk : std_logic := '0';
+
+   signal load : std_logic := '0';
+
+   signal sel : std_logic_vector(1 downto 0) := (others => '0');
+
+   signal si : std_logic := '0';
+
+   signal pi : std_logic_vector(3 downto 0) := (others => '0');
+
+ 
+
+--BiDirs
+
+   signal po : std_logic_vector(3 downto 0);
+
+ 
+
+  --Outputs
+
+   signal so : std_logic;
+
+ 
+
+   -- Clock period definitions
+
+   constant clk_period : time := 20 ns;
+
+ 
+
+BEGIN
+
+ 
+
+-- Instantiate the Unit Under Test (UUT)
+
+   uut: sh_uni PORT MAP (
+
+          clk => clk,
+
+          load => load,
+
+          sel => sel,
+
+          si => si,
+
+          pi => pi,
+
+          so => so,
+
+          po => po
+
+        );
+
+ 
+
+   -- Clock process definitions
+
+   clk_process :process
+
+   begin
+
+clk <= '0';
+
+wait for clk_period/2;
+
+clk <= '1';
+
+wait for clk_period/2;
+
+   end process;
+
+ 
+
+ 
+
+   -- Stimulus process
+
+   stim_proc: process
+
+   begin
+
+sel<= "00"; --SISO mode
+
+si<= '1';
+
+wait for 20 ns ;
+
+si<= '0';
+
+wait for 20 ns ;
+
+si<= '1';
+
+wait for 20 ns;
+
+si<= '0';
+
+wait for 20 ns ;
+
+wait for 100 ns;
+
+ 
+
+sel<= "01";
+
+si<= '1';
+
+wait for 20 ns;
+
+si<= '0';
+
+wait for 20 ns;
+
+si<= '1';
+
+wait for 20 ns;
+
+si<= '1';
+
+wait for 20 ns;
+
+wait for 100 ns;
+
+ 
+
+sel <= "10"; -- PISO mode
+
+-- siso and sipo
+
+load<= '1' ,'0' after 20 ns,'1' after 100 ns, '0' after 120 ns;
+
+pi<= "1100";
+
+wait for 100 ns;
+
+pi<="1111";
+
+wait for 100 ns ;
+
+ 
+
+sel<= "11"; -- PIPO mode
+
+ 
+
+load<= '1', '0' after 20 ns, '1' after 100 ns, '0' after 120 ns;
+
+pi<= "0010";
+
+wait for 100 ns;
+
+pi<= "0100";
+
+wait for 100 ns;
+
+
+end process;
+
+ 
+
+END;
+
+ 
+
+MOD-N Counter 
+
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
+-- Uncomment the following library declaration if using
+-- arithmetic functions with Signed or Unsigned values
+--use IEEE.NUMERIC_STD.ALL;
+-- Uncomment the following library declaration if instantiating
+-- any Xilinx leaf cells in this code.
+--library UNISIM;
+--use UNISIM.VComponents.all;
+entity count is
+Port ( clk : in STD_LOGIC;
+clk_div: inout std_logic;
+rst : in STD_LOGIC;
+an : out std_logic_vector(3 downto 0);
+seg : out std_logic_vector(6 downto 0);
+q : inout STD_LOGIC_VECTOR (3 downto 0));
+end count;
+architecture Behavioral of count is
+signal count : std_logic_vector( 25 downto 0):= (others => '0');
+begin
+an<="0001";
+process(clk_div,rst)
+variable temp: std_logic_vector(3 downto 0):="0000";
+begin
+if (rst='1') then
+temp:= "0000";
+elsif (clk_div'event and clk_div='1') then
+temp:= temp+'1';
+if( temp > "1001") then
+temp := "0000";
+end if;
+end if;
+q<=temp;
+end process;
+process(clk)
+begin
+if (clk'event and clk='1') then
+count <= count + '1';
+end if;
+clk_div<= count(0);
+end process;
+--clk_div<= count(1);
+
+process(q)
+begin
+case q is
+when "0000" => seg <= "1000000"; -- 0
+when "0001" => seg <= "1001111"; -- 1
+when "0010" => seg <= "0100100"; -- 2
+when "0011" => seg <= "0110000"; -- 3
+when "0100" => seg <= "0011001"; -- 4
+when "0101" => seg <= "0010010"; -- 5
+when "0110" => seg <= "0000010"; -- 6
+when "0111" => seg <= "1111000"; -- 7
+when "1000" => seg <= "0000000"; -- 8
+when "1001" => seg <= "0010000"; -- 9
+when others => seg <= "1111111";
+end case;
+end process;
+end Behavioral;
+
+
+Test Bench
+
+—-Testbench
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+entity COUNTER_TB is
+-- Port ( );
+end COUNTER_TB;
+architecture Behavioral of COUNTER_TB is
+COMPONENT count is
+Port ( clk : in STD_LOGIC;
+clk_div: inout std_logic;
+rst : in STD_LOGIC;
+q : inout STD_LOGIC_VECTOR (3 downto 0));
+end component;
+signal clk,clk_div: std_logic;
+signal rst:std_logic;
+signal q: std_logic_vector(3 downto 0);
+begin
+u1: count port map(clk,clk_div,rst,q);
+process
+begin
+clk<='1';
+wait for 100 ns;
+clk<='0';
+wait for 100 ns;
+end process;
+rst<='1', '0' after 300 ns ;
+end Behavioral;
+
+FIFO
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
+-- Uncomment the following library declaration if using
+-- arithmetic functions with Signed or Unsigned values
+--use IEEE.NUMERIC_STD.ALL;
+-- Uncomment the following library declaration if instantiating
+-- any Xilinx leaf cells in this code.
+--library UNISIM;
+--use UNISIM.VComponents.all;
+entity fifoo is
+GENERIC
+(
+ADDRESS_WIDTH:integer:=2;
+DATA_WIDTH:integer:=4
+);
+Port ( clk : in STD_LOGIC;
+-- clk_div : inout STD_LOGIC;
+reset : in STD_LOGIC;
+enr : in STD_LOGIC;
+enw : in STD_LOGIC;
+dataout : out STD_LOGIC_VECTOR (DATA_WIDTH-1 downto 0);
+datain : in STD_LOGIC_VECTOR (DATA_WIDTH-1 downto 0);
+empty : out STD_LOGIC;
+error : out STD_LOGIC;
+full : out STD_LOGIC);
+end fifoo;
+architecture Behavioral of fifoo is
+type memory_type is array(0 to ((2**ADDRESS_WIDTH)-1)) of STD_LOGIC_VECTOR(DATA_WIDTH-1
+downto 0);
+signal memory:memory_type;
+signal readptr,writeptr: STD_LOGIC_VECTOR(ADDRESS_WIDTH-1 downto 0):="00";
+signal full0:STD_LOGIC:='0';
+signal empty0:STD_LOGIC:='1';
+signal counter:STD_LOGIC_VECTOR(30 downto 0):=(others=>'0');
+signal clk_div:STD_LOGIC:='0';
+begin
+full<=full0;
+empty<=empty0;
+fifo0:process(clk_div,reset,datain,enw,enr)
+begin
+if reset='1'thenreadptr<=(others=>'0');
+writeptr<=(others=>'0');
+empty0<='1';
+full0<='0';
+error<='0';
+elsif clk_div'event and clk_div='1' then
+if enw='1' and full0='0' then
+memory (conv_integer(writeptr))<=datain;
+writeptr<=writeptr+'1';
+if(writeptr+'1'=readptr) then
+full0<='1';
+empty0<='0';
+else
+full0<='0';
+empty<='1';
+end if;
+end if;
+end if;
+if enr='1' and empty0='0' then
+dataout<=memory(conv_integer(readptr));
+readptr<=readptr+'1';
+if(readptr+'1'=writeptr) then
+full0<='0';
+empty0<='1';
+else
+full0<='1';
+empty0<='0';
+end if;
+end if;
+if(empty0='1' and enr='1') or (full0='1' and enw='1') then
+error<='1';
+else
+error<='0';
+end if;
+end process;
+process(clk)
+begin
+if(clk'EVENT and clk='1') then
+counter<=counter+1;
+end if;
+end process;
+clk_div<=counter(0);
+end Behavioral;
+
+Test Bench
+
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
+-- Uncomment the following library declaration if using
+-- arithmetic functions with Signed or Unsigned values
+--use IEEE.NUMERIC_STD.ALL;
+-- Uncomment the following library declaration if instantiating
+-- any Xilinx leaf cells in this code.
+--library UNISIM;
+--use UNISIM.VComponents.all;
+entity fifoo_test is
+-- PORT();
+end fifoo_test;
+architecture Behavioral of fifoo_test is
+component fifoo is
+GENERIC
+(
+ADDRESS_WIDTH:integer:=2;
+DATA_WIDTH:integer:=4
+);
+Port ( clk : in STD_LOGIC;
+-- clk_div : inout STD_LOGIC;
+reset : in STD_LOGIC;
+enr : in STD_LOGIC;
+enw : in STD_LOGIC;
+dataout : out STD_LOGIC_VECTOR (3 downto 0);
+datain : in STD_LOGIC_VECTOR (3 downto 0);
+empty : out STD_LOGIC;
+error : out STD_LOGIC;
+full : out STD_LOGIC);
+end component;
+signal clk:STD_LOGIC:='0';
+signal reset:STD_LOGIC;
+signal enr:STD_LOGIC;
+signal enw:STD_LOGIC;
+signal dataout:STD_LOGIC_VECTOR(3 downto 0);
+signal datain:STD_LOGIC_VECTOR(3 downto 0);
+signal empty:STD_LOGIC;
+signal error:STD_LOGIC;
+signal full:STD_LOGIC;
+beginU1: fifoo port map(clk,reset,enr,enw,dataout,datain,empty,error,full);
+process
+begin
+clk<='1';
+wait for 20 ns;
+clk<='0';
+wait for 20 ns;
+end process;
+process
+begin
+reset<='1';
+wait for 20 ns;
+reset<='0';
+datain<="1010";
+enw<='1';
+enr<='0';
+wait for 200 ns;
+enw<='0';
+enr<='1';
+wait for 200 ns;
+end process;
+end Behavioral;
+
+
+
